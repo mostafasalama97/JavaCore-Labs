@@ -1,12 +1,17 @@
 package javafxapplication5;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -22,7 +27,7 @@ public class NoteBad extends Application {
     public void start(Stage primaryStage) {
 
         TextArea textArea = new TextArea();
-
+        BorderPane pane = new BorderPane(); 
         MenuBar bar1 = new MenuBar();
         Menu File = new Menu("file");
         MenuItem fnew = new MenuItem("new");
@@ -62,32 +67,63 @@ public class NoteBad extends Application {
             textArea.clear();
                 
         });
-
+//===============================================================================
         fopen.setOnAction((ActionEvent event) -> {
             System.out.println("Open menu item clicked");
         });
-//===============================================================================
-        fsave.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                try {
-                    // Open the file dialog to get the file to save to
-                    FileChooser fileChooser = new FileChooser();
-                    File file = fileChooser.showSaveDialog(null);
-                    try ( // Write the contents of the text area to the file
-                            FileWriter writer = new FileWriter(file)) {
-                        writer.write(textArea.getText());
+        //=========================================================================
+         fopen.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.home"))); // Set initial directory to user's home directory
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text files (*.txt)", "*.txt")); // Add a filter for text files
+
+            File selectedFile = fileChooser.showOpenDialog(primaryStage);
+                try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
+                    // Read the contents of the file into a string
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        stringBuilder.append(line);
+                        stringBuilder.append(System.lineSeparator());
                     }
+                    String fileContents = stringBuilder.toString();
+
+                    // Display the contents of the file in a text area
+                    TextArea textArea2 = new TextArea();
+                    textArea.setText(fileContents);
+                    pane.setCenter(textArea);
                 } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
-            }
+        });
+        
+//===============================================================================
+            
+            fsave.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.home"))); // Set initial directory to user's home directory
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text files (*.txt)", "*.txt")); // Add a filter for text files
+            File selectedFile = fileChooser.showSaveDialog(primaryStage);
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(selectedFile))) {
+                    // Get the text from the text area
+                    TextArea textArea1 = new TextArea();
+                    String text = textArea.getText();
+
+                    // Write the text to the file
+                    writer.write(text);
+                    writer.flush();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
         });
         //=======================================================================
         fexit.setOnAction((ActionEvent event) -> {
             System.exit(0);
+            primaryStage.close();
         });
         eundo.setOnAction((ActionEvent event) -> {
             System.out.println("Undo menu item clicked");
+            textArea.undo();
         });
 
         ecut.setOnAction((ActionEvent event) -> {
@@ -102,19 +138,41 @@ public class NoteBad extends Application {
 
         epaste.setOnAction((ActionEvent event) -> {
             System.out.println("Paste menu item clicked");
+            textArea.paste();
         });
         eselect.setOnAction((ActionEvent event) -> {
             System.out.println("Select All menu item clicked");
+            textArea.selectAll();
         });
 
         edelete.setOnAction((ActionEvent event) -> {
             System.out.println("Delete menu item clicked");
+            textArea.deletePreviousChar();
         });
-
+//==============================================================================
         Habout.setOnAction((ActionEvent event) -> {
             System.out.println("About Maker menu item clicked");
+            
         });
-        BorderPane pane = new BorderPane();
+        Alert a = new Alert(AlertType.NONE);
+ 
+        // action event
+        EventHandler<ActionEvent> event = new
+                         EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e)
+            {
+                // set alert type
+                a.setAlertType(AlertType.INFORMATION);
+                a.setContentText("Mostafa_Salama-IOT_Track");
+                // show the dialog
+                a.show();
+            }
+        };
+        
+         Habout.setOnAction(event);
+         
+         //=================================================================
+//        BorderPane pane = new BorderPane();
         pane.setTop(bar1);
 
         pane.setCenter(textArea);
